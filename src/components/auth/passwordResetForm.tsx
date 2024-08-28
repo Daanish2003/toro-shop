@@ -2,16 +2,17 @@
 import React from 'react'
 import AuthCard from './authCard'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
-import { NewPasswordSchema } from '@/lib/zod/newPasswordSchema'
+
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Input } from '../ui/input'
 import { useRouter, useSearchParams } from 'next/navigation'
-import newPassword from '@/actions/newPassword'
 import { Button } from '../ui/button'
 import { FormError } from './form-error'
 import { FormSuccess } from './form-success'
+import { newPasswordSchema } from '@/zod/newPasswordSchema'
+import newPassword from '@/actions/new-password'
 
 const PasswordResetForm = () => {
     const router = useRouter()
@@ -23,16 +24,16 @@ const PasswordResetForm = () => {
     const [loading, setLoading] = React.useState<boolean>(false)
 
 
-    const form = useForm<z.infer<typeof NewPasswordSchema>>({
+    const form = useForm<z.infer<typeof newPasswordSchema>>({
          mode: "onBlur",
-         resolver: zodResolver(NewPasswordSchema),
+         resolver: zodResolver(newPasswordSchema),
          defaultValues: {
             password: "",
             confirmPassword: ""
          }
     })
 
-    const onSubmit = async(values: z.infer<typeof NewPasswordSchema>) => {
+    const onSubmit = async(values: z.infer<typeof newPasswordSchema>) => {
         try{
 
         setError("");

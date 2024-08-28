@@ -8,54 +8,55 @@ import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
-import { LoginSchema } from '@/lib/zod/loginSchema'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { FormError } from './form-error'
 import { FormSuccess } from './form-success'
 import AuthSeparator from './authSeparator'
 import Social from './social'
-import { signIn, useSession } from 'next-auth/react'
+import { signinSchema } from '@/zod/signinSchema'
+import login from '@/actions/login'
 
 const LoginForm = () => {
-    const {data: session} = useSession()
    const router = useRouter();
   const [error, setError] = useState<string | undefined>("");
   const [success, setSuccess] = useState<string | undefined>("");
   const [loading, setLoading] = useState<boolean>(false);
+  const [showTwoFactor, setShowTwoFactor] = useState<boolean>(false)
 
 
-    const form = useForm<z.infer<typeof LoginSchema>>({
+    const form = useForm<z.infer<typeof signinSchema>>({
         mode: 'onBlur',
-        resolver: zodResolver(LoginSchema),
+        resolver: zodResolver(signinSchema),
         defaultValues: {
             email: '',
             password: '',
         }
     })
 
-    const onSubmit = async (values: z.infer<typeof LoginSchema>) => {
-        setError("");
-        setSuccess( "");
-        setLoading(true);
-
-        const response = await signIn("credentials", {
-            redirect: false,
-            email: values.email,
-            password: values.password,
-        })
-
-        if (response?.error) {
-            setError(response.error);
-            return;
-        }
-
-        if(response?.ok) {
-            if (!session) {
-                return;
+    const onSubmit = async (values: z.infer<typeof signinSchema>) => {
+        setError('')
+        setSuccess('')
+        setLoading(true)
+       try {
+        const response = await login(values)
+         if(response.success) {
+            setSuccess(response.success)
+            router.push("/home")
+         }
+            if(response.error) {
+                setError(response.error)
             }
-            router.push(`/dashboard/${session.user.id}`)
-        }
+
+            if(response.twoFactor) {
+                setShowTwoFactor(true)
+            }
+       }  catch (error) {
+            console.log(error);
+            setError("Something went wrong")
+       } finally {
+              setLoading(false)
+       }
     }
   return (
     <AuthCard
@@ -66,6 +67,28 @@ const LoginForm = () => {
     >
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
+            {showTwoFactor && (
+              <FormField
+                control={form.control}
+                name="code"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Two Factor Code</FormLabel>
+                    <FormControl>
+                      <Input
+                        {...field}
+                        disabled={loading}
+                        type="number"
+                        placeholder="123456"
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+            {!showTwoFactor && (
+                <>
                 <FormField 
                    control={form.control}
                    name="email"
@@ -98,16 +121,18 @@ const LoginForm = () => {
                                  {...field} 
                                  />
                         </FormControl>
-                                <Link href="./forgot-password" className='text-xs flex justify-end hover:underline'>Forgot Password?</Link>
+                                <Link href="./auth/forgot-password" className='text-xs flex justify-end hover:underline'>Forgot Password?</Link>
                         <FormMessage />
                     </FormItem>
                    )}
                 />
+                </>
+                )}
                 <FormError message={error} />
                 <FormSuccess message={success} />
-                <Button type='submit' disabled={loading} className='w-full'>Submit</Button>
+                <Button type='submit' disabled={loading} className='w-full'>{showTwoFactor ? "Confirm" : "Login"}</Button>
                 <AuthSeparator />
-                <Social />
+                <Social /> 
             </form>
         </Form>
     </AuthCard>

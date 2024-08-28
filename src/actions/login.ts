@@ -1,111 +1,109 @@
-// "use server"
+"use server"
 
-// import { LoginSchema } from "@/lib/zod/loginSchema";
-// import { z } from "zod";
-// import { getUserByEmail } from "@/helpers/data/getUser";
-// import { generateVerificationToken } from "@/helpers/token/genVerificationToken";
-// import { sendVerificationEmail } from "@/helpers/mail/sendVerificationEmail";
-// import { getTwoFactorTokenByEmail } from "@/helpers/data/getTwoFactorTokenByEmail";
-// import prisma from "@/db";
-// import { getTwoFactorConfirmationByUserId } from "@/helpers/data/getTwoFactor";
-// import generateTwoFactorToken from "@/helpers/token/genTwofactorToken";
-// import sendTwoFactorTokenEmail from "@/helpers/mail/sendTwoFactorTokenEmail";
-// import { signIn } from "next-auth/react";
-// import { DEFAULT_LOGIN_REDIRECT } from "@/route";
+import { sendTwoFactorTokenEmail, sendVerificationEmail } from "@/helpers/mail/authMail";
+import { createTwoFactorConfirmation, deleteTwoFactorConfirmation, deleteTwoFactorToken } from "@/helpers/mutation/deleteTwoFactorToken";
+import { getTwoFactorConfirmationByUserId } from "@/helpers/query/getConfirmation";
+import { getTwoFactorTokenByEmail } from "@/helpers/query/getToken";
+import { getUserByEmail } from "@/helpers/query/getUser"
+import { createSession } from "@/lib/session"
+import { generateTwoFactorToken, generateVerificationToken } from "@/lib/token";
+import { signinSchema, signinType } from "@/zod/signinSchema";
+import { verify } from "argon2";
 
-// export default async function login(values: z.infer<typeof LoginSchema>, callbackUrl?: string | null) {
-//     const validatedFields = LoginSchema.safeParse(values);
+export default async function login(values: signinType) {
+     const validatedFields = signinSchema.safeParse(values)
 
-//     if (!validatedFields.success) {
-//         return {
-//             error: "Invalid fields",
-//         }
-//     }
+     if(!validatedFields.success) {
+        return {
+            error: "Invalid Fields"
+        }
+     }
 
-//     const { email, password, code } = validatedFields.data
+     const { email, password, code } = validatedFields.data
 
-//     const existingUser =  await getUserByEmail({email});
+     const existingUser = await getUserByEmail(email);
 
-//     if(!existingUser || !existingUser.email || !existingUser.password) {
-//         return {
-//             error: "User not found",
-//         }
-//     }
+     console.log(existingUser)
 
-//     if (!existingUser.emailVerified) {
-//         const verificationToken  =  await generateVerificationToken(existingUser.email);
+     if(!existingUser || !existingUser.email || !existingUser.password) {
+        return {
+            error: "Email does not exist"
+        }
+     }
 
+     const validPassword = await verify(existingUser.password, password)
+
+     if(!validPassword) {
+        return {
+            error: "Invalid Password"
+        }
+     }
+
+     if(!existingUser.emailVerified) {
+      const verificationToken = await generateVerificationToken(
+        existingUser.email
+      )
+
+      await sendVerificationEmail(
+        verificationToken.email,
+        verificationToken.token,
+      );
+
+      return { success: "Confirmation email sent"};
+    }
+
+    if(existingUser.isTwoFactorEnabled && existingUser.email) {
+      if(code) {
+        const twoFactorToken = await getTwoFactorTokenByEmail(
+           existingUser.email
+        );
+
+        if(!twoFactorToken) {
+         return {
+            error: "Invalid Code"
+         }
+        }
+
+        if(twoFactorToken.token !== code) {
+           return { error: "Invalid code!"}
+        }
+
+        const hasExpired = new Date(twoFactorToken.expires) < new Date();
+
+        if(hasExpired) {
+           return {
+            error: "Code has expired"
+           }
+        }
+
+        await deleteTwoFactorToken(twoFactorToken.id)
+
+        const existingConfirmation = await getTwoFactorConfirmationByUserId(
+             existingUser.id
+        )
+
+        if(existingConfirmation) {
+            await deleteTwoFactorConfirmation(existingConfirmation.id)
         
-//     await sendVerificationEmail(
-//         verificationToken.email, 
-//         verificationToken.token
-//     );
+         }
 
-//     return { success: "Confirmation email send"}
-//     }
+         await createTwoFactorConfirmation(existingUser.id)
+      } else {
+         const twoFactorToken = await generateTwoFactorToken(existingUser.email)
+         await sendTwoFactorTokenEmail(
+            twoFactorToken.email,
+            twoFactorToken.token
+         );
 
-//     if(existingUser.isTwoFactorEnabled && existingUser.email) {
-//         if(code) {
-//             const twoFactorToken = await getTwoFactorTokenByEmail(
-//                 existingUser.email
-//             )
+         return { twoFactor: true}
+      }
+    }
+    
+     await createSession(existingUser.id , existingUser.role)
 
-//             if(!twoFactorToken) {
-//                 return { error: "Invalid code"}
-//             }
-
-//             if (twoFactorToken.token !== code) {
-//                 return { error: "Invalid code!" };
-//               }
-            
-//               const hasExpired = new Date(twoFactorToken.expires) < new Date();
-
-//               if(hasExpired) {
-//                 return { error: "Code has expired" };
-//               }
-
-//               await prisma.twoFactorToken.delete({
-//                 where: {
-//                     id:  twoFactorToken.id
-//                 }
-//               });
-
-//               const existingConfirmation = await getTwoFactorConfirmationByUserId(
-//                 existingUser.id
-//               );
-
-//               if(existingConfirmation) {
-//                 await prisma.twoFactorConfirmation.delete({
-//                     where: {
-//                         id: existingConfirmation.id
-//                     }
-//                 });
-//               }
-
-//               await prisma.twoFactorConfirmation.create({
-//                 data: {
-//                     userId: existingUser.id,
-//                 }
-//               });
-//         } else {
-//             const twoFactorToken = await generateTwoFactorToken(existingUser.email)
-//             await sendTwoFactorTokenEmail(
-//                 twoFactorToken.email,
-//                 twoFactorToken.token
-//             );
-
-//             return { twoFactor: true}
-
-//         }
-//     }
-
-//     try {
-//         await signIn("credentials", {
-//           email,
-//           password,
-//           redirectTo: callbackUrl || DEFAULT_LOGIN_REDIRECT,
-//         })
-//       } catch (error) {
-//         throw error;
-//       }
-// }
+     return {
+        success: "Logged In"
+     }
+     
+     
+}

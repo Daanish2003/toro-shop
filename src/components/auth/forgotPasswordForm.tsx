@@ -4,47 +4,41 @@ import React from 'react'
 import AuthCard from './authCard'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
 import { z } from 'zod'
-import { ResetSchema } from '@/lib/zod/resetSchema'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { Input } from '../ui/input'
 import { Button } from '../ui/button'
-import forgotPassword from '@/actions/forgotPassword'
 import { FormError } from './form-error'
 import { FormSuccess } from './form-success'
+import { newPasswordSchema } from '@/zod/newPasswordSchema'
+import { forgotPasswordSchema } from '@/zod/forgotPasswordSchema'
+import forgotPassword from '@/actions/forgot-password'
 
 const ForgotPasswordForm = () => {
     const [error, setError] = React.useState<string | undefined>("");
     const [success, setSuccess] = React.useState<string | undefined>("");
     const [loading, setLoading] = React.useState<boolean>(false);
 
-    const form = useForm<z.infer<typeof ResetSchema>>({
+    const form = useForm<z.infer<typeof forgotPasswordSchema>>({
         mode: 'onBlur',
-        resolver: zodResolver(ResetSchema),
+        resolver: zodResolver(forgotPasswordSchema),
         defaultValues: {
             email: '',
         }
     })
 
-    const onSubmit = async (values: z.infer<typeof ResetSchema>) => {
-        try {
-        setError("");
-        setSuccess("");
+    const onSubmit = async (values: z.infer<typeof forgotPasswordSchema>) => {
         setLoading(true)
-        const response = await forgotPassword(values);
-
-        if(response.success) {
-            setSuccess(response.success)
-        }
-    
-        if(response.error) {
-            setError(response.error)
-        }
-        } catch (error) {
-            setError("Failed to submit request")
-        } finally {
-            setLoading(false)
-        }
+        setError("")
+        setSuccess("")
+        await forgotPassword(values).then((response) => {
+            if(response.success) {
+                setSuccess(response.success)
+            }
+            if(response.error) {
+                setError(response.error)
+            }
+        })
     }
   return (
     <AuthCard

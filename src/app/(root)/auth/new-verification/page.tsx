@@ -1,10 +1,10 @@
-import VerfyEmail from '@/components/auth/verifyEmail'
-import React from 'react'
+import VerfyEmail from "@/components/auth/verifyEmail";
 
-const VerificationPage = () => {
-  return (
+
+const NewVerificationPage = () => {
+  return ( 
     <VerfyEmail />
-  )
+   );
 }
-
-export default VerificationPage
+ 
+export default NewVerificationPage;
