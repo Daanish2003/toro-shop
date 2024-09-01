@@ -4,6 +4,7 @@ import "./globals.css";
 import getSession from "@/helpers/query/getSession";
 import { SessionProvider } from "@/components/provider/sessionProvider";
 import Navbar from "@/components/navbar";
+import LayoutProvider from "@/components/provider/layoutProvider";
 
 
 const inter = Inter({ subsets: ["latin"] });
@@ -24,8 +25,9 @@ export default async function RootLayout({
     <html lang="en">
       <body className={inter.className}>
           <SessionProvider value={session}>
-                 <Navbar />
-                 {children}
+          <LayoutProvider>
+            {children}
+          </LayoutProvider>
           </SessionProvider>
       </body>
     </html>

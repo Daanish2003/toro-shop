@@ -1,3 +1,4 @@
+"use server"
 import "server-only";
 import { SignJWT, jwtVerify, JWTPayload } from "jose";
 import { cookies } from "next/headers";
@@ -10,7 +11,8 @@ const encodedKey = new TextEncoder().encode(secretKey);
 export type SessionPayload = {
   userId: string;
   expires?: Date;
-  isAuth?: boolean;
+  role:   string;
+  isProfile?: boolean;
 };
 
 
@@ -44,12 +46,12 @@ export async function encrypt(payload: SessionPayload): Promise<string> {
     .sign(encodedKey);
 }
 
-export async function decrypt(session: string | undefined = '') {
+export async function decrypt(session: string | undefined = ''): Promise<SessionPayload | null> {
     try {
       const { payload } = await jwtVerify(session, encodedKey, {
         algorithms: ['HS256'],
       });
-      return payload;
+      return payload as SessionPayload;
     } catch (error) {
       return null;
     }
@@ -60,6 +62,8 @@ export async function createSession(userId: string, role: string): Promise<void>
   const session = await encrypt({
     userId,
     expires,
+    role,
+    isProfile: false
   });
   cookies().set(cookie.name, session, { ...cookie.options, expires });
 }
@@ -78,7 +82,7 @@ export async function verifySession() {
   }
     
   
-    return { isAuth: true, userId: String(session.userId) };
+    return { userId: String(session.userId) };
   }
 
 export async function updateSession(): Promise<void | null> {
@@ -93,12 +97,14 @@ export async function updateSession(): Promise<void | null> {
   const expires = new Date(Date.now() + cookie.duration);
   const newSession = await encrypt({
     userId: String(payload.userId),
+    role: payload.role,
+    isProfile: payload.isProfile,
     expires,
   });
 
   cookies().set(cookie.name, newSession, { ...cookie.options, expires });
 }
 
-export function deleteSession() {
+export async function deleteSession(): Promise<void> {
     cookies().delete('session')
-  }
+}

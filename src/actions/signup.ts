@@ -17,7 +17,7 @@ export const signup = async(values: z.infer<typeof signupSchema>) => {
         }
      }
 
-     const { email, password, name } = validatedFields.data
+     const { email, password } = validatedFields.data
 
      const hashedPassword = await hash(password)
      console.log(hashedPassword)
@@ -43,7 +43,7 @@ export const signup = async(values: z.infer<typeof signupSchema>) => {
      }
 
 
-     const newUser = await createUser(email, hashedPassword, name)
+     const newUser = await createUser(email, hashedPassword)
 
      console.log(newUser)
 

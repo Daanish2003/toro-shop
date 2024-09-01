@@ -1,11 +1,11 @@
 "use client"
 import React, { useCallback, useEffect } from 'react'
-import AuthCard from './authCard'
 import { useRouter, useSearchParams } from 'next/navigation';
 import { BeatLoader } from "react-spinners"
 import { FormSuccess } from './form-success';
 import { FormError } from './form-error';
 import { verifyEmail } from '@/actions/verify-email';
+import CardWrapper from '../cardWrapper';
 
 const VerfyEmail = () => {
     const [error, setError] = React.useState<string | undefined>();
@@ -27,7 +27,7 @@ const VerfyEmail = () => {
         verifyEmail(token).then((data) => {
             setSuccess(data.success);
             setError(data.error)
-            router.push('/home')
+            router.push('/auth/set-profile')
         }).catch(() => {
             setError("Something went wrong")
         })
@@ -39,7 +39,7 @@ const VerfyEmail = () => {
 
 
   return (
-    <AuthCard
+    <CardWrapper
        cardTitle={"Confirming your verification"}
        cardFooter={"Back to Login"}
        cardFooterLink={"/auth/login"}
@@ -51,7 +51,7 @@ const VerfyEmail = () => {
         {!success && (
           <FormError message={error} />
         )}
-    </AuthCard> 
+    </CardWrapper> 
   )
 }
 

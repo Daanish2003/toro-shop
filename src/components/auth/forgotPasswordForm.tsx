@@ -1,7 +1,6 @@
 "use client"
 
 import React from 'react'
-import AuthCard from './authCard'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -13,6 +12,7 @@ import { FormSuccess } from './form-success'
 import { newPasswordSchema } from '@/zod/newPasswordSchema'
 import { forgotPasswordSchema } from '@/zod/forgotPasswordSchema'
 import forgotPassword from '@/actions/forgot-password'
+import CardWrapper from '../cardWrapper'
 
 const ForgotPasswordForm = () => {
     const [error, setError] = React.useState<string | undefined>("");
@@ -41,7 +41,7 @@ const ForgotPasswordForm = () => {
         })
     }
   return (
-    <AuthCard
+    <CardWrapper
        cardTitle = {"Forgot Password"}
        cardDescription={"Enter your email address and we will send you a link to reset your password"}
        cardFooter={"Remember your password? Login"}
@@ -72,7 +72,7 @@ const ForgotPasswordForm = () => {
                 <Button type="submit" disabled={loading} className='w-full'>Submit</Button>
             </form>
         </Form>
-    </AuthCard>
+    </CardWrapper>
   )
 }
 

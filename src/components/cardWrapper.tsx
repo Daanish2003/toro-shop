@@ -1,9 +1,17 @@
 import React from 'react'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '../ui/card'
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card'
 import Link from 'next/link'
-import { Button } from '../ui/button'
+import { Button } from './ui/button'
 
-const AuthCard = ( {children, cardTitle, cardDescription, cardFooter, cardFooterLink}: AuthCard) => {
+type CardWrapper = {
+  children: React.ReactNode
+  cardTitle: string
+  cardDescription?: string
+  cardFooter: string
+  cardFooterLink: string
+}
+
+const CardWrapper = ( {children, cardTitle, cardDescription, cardFooter, cardFooterLink}: CardWrapper) => {
   return (
     <Card className='w-[450px]'>
       <CardHeader className='space-y-3 text-center'>
@@ -20,4 +28,4 @@ const AuthCard = ( {children, cardTitle, cardDescription, cardFooter, cardFooter
   )
 }
 
-export default AuthCard
+export default CardWrapper

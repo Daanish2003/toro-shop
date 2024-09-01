@@ -1,6 +1,5 @@
 "use client"
 import React from 'react'
-import AuthCard from './authCard'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
 
 import { useForm } from 'react-hook-form'
@@ -13,6 +12,7 @@ import { FormError } from './form-error'
 import { FormSuccess } from './form-success'
 import { newPasswordSchema } from '@/zod/newPasswordSchema'
 import newPassword from '@/actions/new-password'
+import CardWrapper from '../cardWrapper'
 
 const PasswordResetForm = () => {
     const router = useRouter()
@@ -62,7 +62,7 @@ const PasswordResetForm = () => {
     }
 
   return (
-    <AuthCard
+    <CardWrapper
       cardTitle={"Reset Password"}
       cardDescription={"Create new password"}
       cardFooter={"Back to Login"}
@@ -111,7 +111,7 @@ const PasswordResetForm = () => {
                 <Button type="submit" className='w-full' disabled={loading}>Submit</Button>
             </form>
         </Form>
-    </AuthCard>
+    </CardWrapper>
   )
 }
 

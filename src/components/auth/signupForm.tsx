@@ -1,7 +1,6 @@
 "use client"
 
 import React from 'react'
-import AuthCard from './authCard'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -15,6 +14,7 @@ import { FormError } from './form-error'
 import { FormSuccess } from './form-success'
 import { signupSchema } from '@/zod/signupSchema'
 import { signup } from '@/actions/signup'
+import CardWrapper from '../cardWrapper'
 
 const SignupForm = () => {
     const [ error, setError ] = React.useState<string | undefined>("");
@@ -27,7 +27,6 @@ const SignupForm = () => {
         mode: 'onBlur',
         resolver: zodResolver(signupSchema),
         defaultValues: {
-            name: "",
             email: '',
             password: '',
             confirmPassword: ''
@@ -50,7 +49,7 @@ const SignupForm = () => {
         }) 
     }
   return (
-    <AuthCard
+    <CardWrapper
         cardTitle={"Create Account"}
         cardDescription={"Create an account to get started."}
         cardFooter={"Already have an account? Login"}
@@ -58,24 +57,6 @@ const SignupForm = () => {
     >
         <Form {...form}>
             <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4'>
-                <FormField 
-                   control={form.control}
-                   name="name"
-                   render={({field}) => (
-                    <FormItem>
-                        <FormLabel>Full Name</FormLabel>
-                        <FormControl>
-                            <Input
-                               disabled={loading} 
-                               placeholder='Enter your name' 
-                               type="text" 
-                               {...field} 
-                               />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                   )}
-                />
                 <FormField 
                    control={form.control}
                    name="email"
@@ -137,7 +118,7 @@ const SignupForm = () => {
                 <Social />
             </form>
         </Form>
-    </AuthCard>
+    </CardWrapper>
   )
 }
 

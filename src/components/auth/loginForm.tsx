@@ -1,7 +1,6 @@
 "use client"
 
 import React, { useState } from 'react'
-import AuthCard from './authCard'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -16,6 +15,7 @@ import AuthSeparator from './authSeparator'
 import Social from './social'
 import { signinSchema } from '@/zod/signinSchema'
 import login from '@/actions/login'
+import CardWrapper from '../cardWrapper'
 
 const LoginForm = () => {
    const router = useRouter();
@@ -59,7 +59,7 @@ const LoginForm = () => {
        }
     }
   return (
-    <AuthCard
+    <CardWrapper
         cardTitle={"Login"}
         cardDescription={"Login to your account"}
         cardFooter={"Don't have a account? Signup"}
@@ -135,7 +135,7 @@ const LoginForm = () => {
                 <Social /> 
             </form>
         </Form>
-    </AuthCard>
+    </CardWrapper>
   )
 }
 
