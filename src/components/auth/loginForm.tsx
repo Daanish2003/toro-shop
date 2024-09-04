@@ -42,7 +42,7 @@ const LoginForm = () => {
         const response = await login(values)
          if(response.success) {
             setSuccess(response.success)
-            router.push("/home")
+            router.push("/dashboard")
          }
             if(response.error) {
                 setError(response.error)

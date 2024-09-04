@@ -3,7 +3,7 @@ import { cookies } from 'next/headers';
 import { decrypt, updateSession } from './lib/session';
 
 // 1. Specify protected and public routes
-const protectedRoutes = ['/home'];
+const protectedRoutes = ['/dashboard'];
 const publicRoutes = ['/auth/login', '/auth/signup', '/', '/new-verification'];
 const AdminRoutes = ['/admin, /admin/*'];
 
@@ -24,13 +24,13 @@ export default async function middleware(req: NextRequest) {
   if (
     isPublicRoute &&
     session?.userId &&
-    !req.nextUrl.pathname.startsWith('/home')
+    !req.nextUrl.pathname.startsWith('/dashboard')
   ) {
-    return NextResponse.redirect(new URL('/home', req.nextUrl));
+    return NextResponse.redirect(new URL('/dashboard', req.nextUrl));
   }
 
   if (isAdminRoute && session?.role !== 'admin') {
-    return NextResponse.redirect(new URL('/home', req.nextUrl));
+    return NextResponse.redirect(new URL('/dashboard', req.nextUrl));
   }
 
   return NextResponse.next();

@@ -2,8 +2,6 @@
 import "server-only";
 import { SignJWT, jwtVerify, JWTPayload } from "jose";
 import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-// Import redirect from 'next/navigation' if needed (optional)
 
 const secretKey = process.env.SESSION_SECRET;
 const encodedKey = new TextEncoder().encode(secretKey);
@@ -82,7 +80,7 @@ export async function verifySession() {
   }
     
   
-    return { userId: String(session.userId) };
+    return { userId: String(session.userId), role: session.role, isProfile: session.isProfile, expires: session.expires };
   }
 
 export async function updateSession(): Promise<void | null> {

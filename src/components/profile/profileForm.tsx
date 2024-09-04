@@ -82,7 +82,7 @@ const ProfileForm = () => {
       if(response.success) {
         setSuccess(response.success)
         setTimeout(() => {
-          router.push('/home')
+          router.push('/dashboard')
         })
       }
      } catch (error) {
